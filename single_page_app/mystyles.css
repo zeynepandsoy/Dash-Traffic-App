@@ -1,0 +1,34 @@
+h1 {
+    color: plum;
+    text-decoration-line: underline;
+}
+
+img {
+    border-radius: 50%;
+}
+
+ol {
+    list-style-type: lower-roman;
+}
+
+
+a {
+    color: hotpink;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+tr {
+    background-color: #f2f2f2;
+}
+
+
+
+td,
+th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
