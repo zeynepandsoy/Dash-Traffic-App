@@ -39,7 +39,7 @@ dropdown = dcc.Dropdown(options=['Holiday', 'Weather'],
 #add above 'Day of the Week','Time of the Day'
 
 # Customize your own Layout
-app.layout = dbc.Container([mytitle],[mygraph],[dropdown])
+layout = dbc.Container(children=[[mytitle], [mygraph], [dropdown]])
   
 # Callback allows components to interact
 @app.callback(

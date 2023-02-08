@@ -1,8 +1,13 @@
 # Copied from the Dash documetation sample code at https://github.com/plotly/dash-recipes/tree/master/multi-page-app
 #DOESNT WORK
+import dash
+from dash import callback
 from dash import Input, Output, html, dcc
 import dash_bootstrap_components as dbc
-from multi_page_app.app import app
+#from multi_page_app.app import app
+#from app import app
+
+dash.register_page(__name__)
 
 layout = dbc.Container(fluid=True, children=[
     html.Br(),
@@ -19,6 +24,6 @@ layout = dbc.Container(fluid=True, children=[
 ])
 
 
-@app.callback(Output('app-2-display-value', 'children'), Input('app-2-dropdown', 'value'))
+@callback(Output('app-2-display-value', 'children'), Input('app-2-dropdown', 'value'))
 def display_value(value):
     return 'You have selected "{}"'.format(value)
