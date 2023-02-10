@@ -22,6 +22,8 @@ Add the URL to your GitHub repo here e.g. https://github.com/ucl-comp0035name_of
 
 Add evidence here.
 
+explain why i couldnt add the multipage navigation bar layout in app.py
+
 # Dash app
 
 Add any notes here (optional).
