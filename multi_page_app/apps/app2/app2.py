@@ -33,7 +33,26 @@ dropdown = dcc.Dropdown(options=df_traffic.columns.values[0:4],
 
 #layout = dbc.Container(children=[[mytitle], [mygraph], [dropdown]])
 
+
 layout = dbc.Container([
+        dbc.Navbar(
+            [
+                dbc.NavItem(
+                    [
+                        dbc.NavLink(
+                            page["name"],
+                            href=(page["relative_path"]),
+                            className="nav-link",
+                        )
+                        for page in dash.page_registry.values()
+                    ],
+                    className="nav-item",
+                ),
+            ],
+            className="navbar navbar-dark bg-primary",
+        ),
+    
+
     dbc.Row([
         dbc.Col([mytitle], width=6)
     ], justify='center'),
@@ -45,6 +64,7 @@ layout = dbc.Container([
     ], justify='center'),
 
 ], fluid=True)
+
   
 # Callback allows components to interact
 @callback(

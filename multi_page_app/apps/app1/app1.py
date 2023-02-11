@@ -50,6 +50,7 @@ df_agg_trfc = df_traffic.groupby('date').aggregate({'traffic_volume':'mean'}) # 
 #graph should display average traffic volumes based on date (working code based on year in docs) try to add animation
 #add a date picker when a user enters/submits a date show its max and min values
 
+"""
 datepicker = dcc.DatePickerSingle(
     id='my-date-picker-single',
     min_date_allowed=date(2012, 10, 2),
@@ -57,28 +58,29 @@ datepicker = dcc.DatePickerSingle(
     initial_visible_month=date(2012, 10, 2),
     date = date(2012, 10, 2) #degistir
 )
+"""
 
 
 #code adapted from https://plotly.com/python/box-plots/#box-plots-in-dash
 
 layout = dbc.Container(
      [
-         dbc.Navbar(
-             [
-                 dbc.NavItem(
-                     [
-                         dbc.NavLink(
-                             page["name"],
-                             href=(page["relative_path"]),
-                             className="nav-link",
-                         )
-                         for page in dash.page_registry.values()
-                     ],
-                     className="nav-item",
-                 ),
-             ],
-             className="navbar navbar-dark bg-primary",
-         ),
+            dbc.Navbar(
+            [
+                dbc.NavItem(
+                    [
+                        dbc.NavLink(
+                            page["name"],
+                            href=(page["relative_path"]),
+                            className="nav-link",
+                        )
+                        for page in dash.page_registry.values()
+                    ],
+                    className="nav-item",
+                ),
+            ],
+            className="navbar navbar-dark bg-primary",
+        ),
         #  dash.page_container,
     html.H4("Box Plot of Hourly I-94 ATR 301 westbound traffic volume over different date time features"),
     html.H2("Observe traffic volume over time"),
@@ -89,16 +91,16 @@ layout = dbc.Container(
         value=['Year'], 
         inline=True
     ),
-    datepicker,
+    #datepicker,
     dcc.Graph(id="graph"),
 ])
 
 # Callback allows components to interact
 @callback(
     Output("graph", "figure"), 
-    Output("my-date-picker-single", 'children'),
+    #Output("my-date-picker-single", 'children'),
     Input("x-axis", "value"),
-    Input("my-date-picker-single", 'date')
+    #Input("my-date-picker-single", 'date')
    )
 
 def generate_chart(x):  # function arguments come from the component property of the Input
@@ -107,13 +109,14 @@ def generate_chart(x):  # function arguments come from the component property of
     fig = px.box(df_traffic, x=x, y="traffic_volume")
     return fig
 
+"""
 def update_output(date_value):
     string_prefix = 'You have selected: '
     if date_value is not None:
         date_object = date.fromisoformat(date_value)
         date_string = date_object.strftime('%B %d, %Y')
         return string_prefix + date_string
-
+"""
 
 """
 line_traffic = px.line(df_agg_trfc,

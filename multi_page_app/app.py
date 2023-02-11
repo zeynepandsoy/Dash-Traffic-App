@@ -7,7 +7,7 @@
 import dash
 from dash import callback
 from dash import Dash, html, dcc
-
+from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 app = Dash(
@@ -18,95 +18,63 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1"},
-    ],
+    ]
 )
+"""
+tab code
+app.layout = html.Div([
+    dcc.Tabs(id="tabs-styled-with-props", value='tab-1', children=[
+        dcc.Tab(label='1', value='tab-1'),
+        dcc.Tab(label='2', value='tab-2'),
+    ], colors={
+        "border": "white",
+        "primary": "gold",
+        "background": "cornsilk"
+    }),
+    html.Div(id='tabs-content-props')
+])
+
+@app.callback(Output('tabs-content-props', 'children'),
+              Input('tabs-styled-with-props', 'value'))
+def render_content(tab):
+    if tab == 'tab-1':
+        return html.Div([
+            html.H3('Tab content 1')
+        ])
+    elif tab == 'tab-2':
+        return html.Div([
+            html.H3('Tab content 2')
+        ])
+
+
 # Navbar https://community.plotly.com/t/introducing-dash-pages-a-dash-2-x-feature-preview/57775
 
-# navbar =  dbc.Navbar(
-#              [
-#                 dbc.NavItem(
-#                     [
-#                         dbc.NavLink(
-#                             page["name"],
-#                             href=(page["relative_path"]),
-#                             className="nav-link",
-#                         )
-#                         for page in dash.page_registry.values()
-#                     ],
-#                     className="nav-item",
-#                 ),
-#             ],
-#             className="navbar navbar-dark bg-primary",
-#         )
-
-# layout = html.Div(
-#      [
-#         navbar,
-#         dash.page_container,
-#      ]
-#  )
- 
-
-
-if __name__ == "__main__":
-    app.run_server(debug=True, port=8666)
-
-
-
-#server = app.server
-#app = Dash(__name__, use_pages=True)
-
-
 # Bootstrap style layout in a container
-# layout = dbc.Container(
-#      [
-#          dbc.Navbar(
-#              [
-#                  dbc.NavItem(
-#                      [
-#                          dbc.NavLink(
-#                              page["name"],
-#                              href=(page["relative_path"]),
-#                              className="nav-link",
-#                          )
-#                          for page in dash.page_registry.values()
-#                      ],
-#                      className="nav-item",
-#                  ),
-#              ],
-#              className="navbar navbar-dark bg-primary",
-#          ),
-#          dash.page_container,
-#      ]
-#  )
+app.layout = dbc.Container(
+      [
+          dbc.Navbar(
+              [
+                  dbc.NavItem(
+                      [
+                          dbc.NavLink(
+                              page["name"],
+                              href=(page["relative_path"]),
+                              className="nav-link",
+                          )
+                          for page in dash.page_registry.values()
+                      ],
+                      className="nav-item",
+                  ),
+              ],
+              className="navbar navbar-dark bg-primary",
+          ),
+          #dash.page_container,
+      ]
+)
 
+#2ND NAVI CODE
 
-
-# Bootstrap style layout in a container
-# layout = dbc.Container(
-# dbc.NavbarSimple(
-#     children=[
-#         dbc.NavItem(dbc.NavLink("Page 1", href="#")),
-#         dbc.DropdownMenu(
-#             children=[
-#                 dbc.DropdownMenuItem("More pages", header=True),
-#                 dbc.DropdownMenuItem("Page 2", href="#"),
-#                 dbc.DropdownMenuItem("Page 3", href="#"),
-#             ],
-#             nav=True,
-#             in_navbar=True,
-#             label="More",
-#         ),
-#     ],
-#     brand="NavbarSimple",
-#     brand_href="#",
-#     color="primary",
-#     dark=True,
-# )
-# )
-
-"""
-FIGURE OUT HOW TO LINK NAVI CODE TO MULTI PAGES
+#FIGURE OUT HOW TO LINK NAVI CODE TO MULTI PAGES
 #add navigation bar for multipage app
 navbar = dbc.NavbarSimple(
     children=[
@@ -137,8 +105,34 @@ layout = html.Div([
 
 	dash.page_container
 ])
-
-if __name__ == '__main__':
-	app.run_server(debug=True, port=8067)
+ 
+3RD NAVI CODE
+# Bootstrap style layout in a container
+layout = dbc.Container(
+ dbc.NavbarSimple(
+     children=[
+         dbc.NavItem(dbc.NavLink("Page 1", href="#")),
+         dbc.DropdownMenu(
+              children=[
+                 dbc.DropdownMenuItem("More pages", header=True),
+                 dbc.DropdownMenuItem("Page 2", href="#"),
+                 dbc.DropdownMenuItem("Page 3", href="#"),
+             ],
+             nav=True,
+             in_navbar=True,
+             label="More",
+         ),
+     ],
+     brand="NavbarSimple",
+     brand_href="#",
+     color="primary",
+     dark=True,
+ )
+ )
 
 """
+
+if __name__ == "__main__":
+    app.run_server(debug=True, port=8667)
+
+
