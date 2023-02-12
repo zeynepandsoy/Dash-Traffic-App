@@ -1,14 +1,11 @@
-# Copied from the Dash documetation sample code at https://github.com/plotly/dash-recipes/tree/master/multi-page-app
-#DOESNT WORK
-import dash
-from dash import callback
-from dash import Input, Output, html, dcc
+import dash  # version 1.13.1
+from dash import dcc
+from dash import html, callback
 import dash_bootstrap_components as dbc
-#from multi_page_app.app import app
-#from app import app
-#import helper functions to create the charts
-import pandas as pd
+from dash.dependencies import Input, Output, ALL, State, MATCH, ALLSMALLER
 import plotly.express as px
+import pandas as pd
+import numpy as np
 from pathlib import Path
 
 dash.register_page(__name__)
@@ -20,137 +17,124 @@ cols = ['holiday', 'weather', 'traffic_volume', 'Year', 'Month', 'Day', 'Hour', 
 
 df_traffic = pd.read_excel(traffic_data_filepath, usecols=cols)
 
-date_cols=['Year','Month','Day']
 
-df_traffic['date'] = df_traffic[date_cols].apply(lambda x: '-'.join(x.values.astype(str)), axis="columns")
-#print(df_traffic.head(10))
+df_traffic.rename(columns={'traffic_volume': 'traffic volume', 'categorized_hour': 'categorized hour', 'categorized_weekday': 'categorized weekday'}, inplace=True)
 
-df_traffic['date']=pd.to_datetime(df_traffic['date'])
-
-df_traffic = df_traffic.reindex(['Year', 'Month', 'Day', 'Hour','date','holiday','weather','categorized_hour','categorized_weekday', 'traffic_volume'], axis=1)
-print(df_traffic.head())
+# create a new column; traffic density, dividing each subsequent traffic volume entry by its overall mean
+df_traffic['traffic density'] = df_traffic['traffic volume'] / df_traffic['traffic volume'].mean(axis=0)
+#print(df_traffic.head())
+#print(df_traffic[['traffic volume']].mean())
 
 
-mytitle = dcc.Markdown(children='')
-mygraph = dcc.Graph(figure={})
-dropdown = dcc.Dropdown(options=df_traffic.columns.values[0:5],
-                        value='date',  # initial value displayed when page first loads
-                        clearable=False)
+# Below code for app2 is implemented from:
+# https://github.com/Coding-with-Adam/Dash-by-Plotly/blob/master/Callbacks/Pattern%20Matching%20Callbacks/dynamic_callbacks.py
 
+layout = html.Div([
+    html.Div(children=[
+        html.Button('Add Chart', id='add-chart', n_clicks=0),
+    ]),
+    html.Div(id='container', children=[])
+])
 
 #layout = dbc.Container(children=[[mytitle], [mygraph], [dropdown]])
 
-
-layout = dbc.Container([
-        dbc.Navbar(
-            [
-                dbc.NavItem(
-                    [
-                        dbc.NavLink(
-                            page["name"],
-                            href=(page["relative_path"]),
-                            className="nav-link",
-                        )
-                        for page in dash.page_registry.values()
-                    ],
-                    className="nav-item",
-                ),
-            ],
-            className="navbar navbar-dark bg-primary",
-        ),
-    
-
-    dbc.Row([
-        dbc.Col([mytitle], width=6)
-    ], justify='center'),
-    dbc.Row([
-        dbc.Col([mygraph], width=12)
-    ]),
-    dbc.Row([
-        dbc.Col([dropdown], width=6)
-    ], justify='center'),
-
-], fluid=True)
-
-  
-# Callback allows components to interact
 @callback(
-    Output(mygraph, 'figure'),
-    Output(mytitle, 'children'),
-    Input(dropdown, 'value')
+    #state & input will be the arguments of below function, what is returned will go into the children of container(output)
+    Output('container', 'children'), 
+    [Input('add-chart', 'n_clicks')], #take the n_clicks of the add-chart component id (button)
+    [State('container', 'children')] #take the state of component children which is Div that is empty list []
 )
 
 
-def update_graph(user_input):  # function arguments come from the component property of the Input
-    if user_input == 'Year':
-         # Aggregate traffic volume hour description in a new dataframe 
-         df_year = df_traffic.groupby(df_traffic['Year']).aggregate({'traffic_volume':'mean'})
-         fig = px.line(df_year,
-                         x= df_year.index,
-                         y='traffic_volume',
-                         labels={'Year': '', 'traffic_volume': 'average traffic volume'},
-                         template="simple_white"
-                         )
-
-    elif user_input == 'Month':
-        df_month = df_traffic.groupby(df_traffic['Month']).aggregate({'traffic_volume':'mean'})
-        fig = px.line(df_month,
-                    x= df_month.index,
-                    y='traffic_volume',
-                    labels={'Month': '', 'traffic_volume': 'average traffic volume'},
-                    template="simple_white"
-                    )
-        
-
-    elif user_input == 'Day':
-        df_day= df_traffic.groupby(df_traffic['Day']).aggregate({'traffic_volume':'mean'})
-        #print(df_hour.head())
-        fig = px.line(df_day,
-                    x= df_day.index,
-                    y='traffic_volume',
-                    labels={'Day': '', 'traffic_volume': 'average traffic volume'},
-                    template="simple_white"
-                    )
-    elif user_input == 'Hour':
-        df_hour= df_traffic.groupby(df_traffic['Hour']).aggregate({'traffic_volume':'mean'})
-        fig = px.line(df_hour,
-                    x= df_hour.index,
-                    y='traffic_volume',
-                    labels={'Hour': '', 'traffic_volume': 'average traffic volume'},
-                    template="simple_white"
-                    )
-    elif user_input == 'date':
-        df_date= df_traffic.groupby(df_traffic['date']).aggregate({'traffic_volume':'mean'})
-        fig = px.line(df_date,
-                    x= df_date.index,
-                    y='traffic_volume',
-                    labels={'date': '', 'traffic_volume': 'average traffic volume'},
-                    template="simple_white"
-                    )
-    
-
-    return fig , '# '+user_input  # returned objects are assigned to the component property of the Output
-
-
-
-"""
-
-layout = dbc.Container(fluid=True, children=[
-    html.Br(),
-    html.H1('Fruit Selector'),
-    dcc.Dropdown(
-        id='app-2-dropdown',
-        options=[
-            {'label': '{}'.format(i), 'value': i} for i in [
-                'Apple', 'Banana', 'Coconut', 'Date'
-            ]
+# 'n_clicks'of Input and 'children' of State is arguments of fuction
+# when someone clicks n_clicks triggers below function
+def display_graphs(n_clicks, div_children):
+    # new_child variable is an html.Div with many different childrens (graph,radioitem)
+    new_child = html.Div(
+        style={'width': '45%', 'display': 'inline-block', 'outline': 'thin lightgrey solid', 'padding': 10},
+        children=[
+            dcc.Graph(
+                id={
+                    'type': 'dynamic-graph',
+                    'index': n_clicks
+                },
+                figure={}
+            ),
+            dcc.RadioItems(
+                id={
+                    'type': 'dynamic-choice',
+                    'index': n_clicks
+                },
+                options=[{'label': 'Bar Chart', 'value': 'bar'},
+                         {'label': 'Line Chart', 'value': 'line'},
+                         {'label': 'Pie Chart', 'value': 'pie'}],
+                value='bar',
+            ),
+            dcc.Dropdown(
+                id={
+                    'type': 'dynamic-dpn-y',
+                    'index': n_clicks
+                },
+                options=[{'label': y, 'value': y} for y in np.sort(df_traffic['categorized hour'].unique())],
+                multi=True,
+                value=["Morning", "Afternoon"],
+            ),
+            dcc.Dropdown(
+                id={
+                    'type': 'dynamic-dpn-ctg',
+                    'index': n_clicks
+                },
+                options=[{'label': c, 'value': c} for c in ['categorized hour', 'weather', 'categorized weekday','holiday']],
+                value='categorized hour',
+                clearable=False
+            ),
+            dcc.Dropdown(
+                id={
+                    'type': 'dynamic-dpn-num',
+                    'index': n_clicks
+                },
+                options=[{'label': n, 'value': n} for n in ['traffic volume', 'traffic density']],
+                value='traffic volume',
+                clearable=False
+            )
         ]
-    ),
-    html.Div(id='app-2-display-value')
-])
+    )
+    div_children.append(new_child) #new_child will be appended to div_children (children of state:[])
+    return div_children  
+#each time button is clicked another html.Div will be added in the list which goes in chrildren of cotainer (Output)
+#which goes in children=[] in main layout
 
+#DYNAMICAL CALLBACKS
+@callback(
+    Output({'type': 'dynamic-graph', 'index': MATCH}, 'figure'),
+    [Input(component_id={'type': 'dynamic-dpn-y', 'index': MATCH}, component_property='value'), #for year
+     Input(component_id={'type': 'dynamic-dpn-ctg', 'index': MATCH}, component_property='value'), #categorical values
+     Input(component_id={'type': 'dynamic-dpn-num', 'index': MATCH}, component_property='value'), #numerical values
+     Input({'type': 'dynamic-choice', 'index': MATCH}, 'value')] 
+)
+#df_month = df_traffic[df_traffic['holiday'] != 'None']
 
-@callback(Output('app-2-display-value', 'children'), Input('app-2-dropdown', 'value'))
-def display_value(value):
-    return 'You have selected "{}"'.format(value)
-"""
+#as we have 4 inputs we have 4 argument (change their names)
+def update_graph(y_value, ctg_value, num_value, chart_choice):
+    print(y_value)
+    # make a copy of the dataframe and filter the data such that it only has different categorized hours
+    dff_traffic = df_traffic[df_traffic['categorized hour'].isin(y_value)]
+    print(dff_traffic.head())
+
+    if chart_choice == 'bar':
+        dff_traffic = dff_traffic.groupby([ctg_value], as_index=False)[['traffic volume','traffic density']].mean()
+        
+        fig = px.bar(dff_traffic, x=ctg_value, y=num_value)
+        return fig
+    
+    elif chart_choice == 'line':
+        if len(y_value) == 0:
+            return {}
+        else:
+            dff_traffic = dff_traffic.groupby([ctg_value, 'Year'], as_index=False)[['traffic volume','traffic density']].mean()
+            fig = px.line(dff_traffic, x='Year', y=num_value, color=ctg_value)
+            return fig
+    elif chart_choice == 'pie':
+        fig = px.pie(dff_traffic, names=ctg_value, values=num_value)
+        return fig
+
