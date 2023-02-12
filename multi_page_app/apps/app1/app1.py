@@ -80,14 +80,28 @@ layout = dbc.Container([
         dbc.Tab(label="Histograms", tab_id="histogram"),
     ],
 """
+tab_style = {
+    'borderBottom': '1px solid #d6d6d6',
+    'padding': '6px',
+    'fontWeight': 'bold'
+}
+
+tab_selected_style = {
+    'borderTop': '1px solid #d6d6d6',
+    'borderBottom': '1px solid #d6d6d6',
+    'backgroundColor': '#119DFF',
+    'color': 'white',
+    'padding': '6px'
+}
+
 #try to initialize 1st tab to open when app1 is clicked
 layout = dbc.Container([
     html.H1('Traffic Analysis App'),
     dcc.Tabs(id="tabs-example-graph", value='tab-1-example-graph', children=[ 
-        dcc.Tab(label='Tab One (date boxplot)', value='tab-1-boxplot'),
-        dcc.Tab(label='Tab Two (date line chart)', value='tab-2-linechart'),
+        dcc.Tab(label='Tab One (date boxplot)', value='tab-1-boxplot',style=tab_style, selected_style=tab_selected_style),
+        dcc.Tab(label='Tab Two (date line chart)', value='tab-2-linechart',style=tab_style, selected_style=tab_selected_style),
     ]),
-    html.Div(id='tabs-content-example-graph')
+    dbc.Container(id='tabs-content-example-graph') 
 ])
 
 @callback(Output('tabs-content-example-graph', 'children'),
@@ -95,9 +109,8 @@ layout = dbc.Container([
 
 def render_content(tab):
     if tab == 'tab-1-boxplot':
-        return html.Div([
-            html.H3("Box Plot of Hourly I-94 ATR 301 westbound traffic volume over different date time features"),
-            html.H2("Observe traffic volume over time"),
+        return dbc.Container([
+            html.H3("Box Plot of I-94 ATR 301 westbound traffic volume over different date time features"),
             html.P("x-axis:"),
             dcc.Checklist(
                 id='x-axis', 
@@ -108,17 +121,16 @@ def render_content(tab):
             dcc.RadioItems(
                 id = 'distribution-plot-choice',
                 options=[{'label': 'Box Plot', 'value': 'box'},
-                         {'label': 'Violing PLot', 'value': 'violin'}],
+                         {'label': 'Violing Plot', 'value': 'violin'}],
                 value = 'box'
         
             ),
             dcc.Graph(id="tab2-plot-figure",figure={})   
-            #dcc.Graph(id="box-plot-figure"),
         ])
 
 
     elif tab == 'tab-2-linechart':
-        return html.Div([
+        return dbc.Container([
             html.H3("Line Chart of Hourly I-94 ATR 301 westbound traffic volume over different date time features"),
             dbc.Row([
                 dbc.Col([mytitle], width=6)
@@ -137,33 +149,26 @@ def render_content(tab):
 #1st callback refers to tab1
 @callback(
     Output("tab2-plot-figure",'figure'), 
-    Input("x-axis", 'value'),
-    Input("distribution-plot-choice",'value')
+    Input("x-axis", 'value'),  # user input for x-axis selected from dropdown menu
+    Input("distribution-plot-choice",'value')  # user input of distribution plot type selected from RadioItem
    )
 
-#1st function generates the interactive boxplot in tab 1
-#def generate_chart(x):  # function arguments come from the component property of the Input
-#    #print(x)
-#    #df_year = df_traffic.groupby(df_traffic['Year']).aggregate({'traffic_volume':'mean'})
-#    fig = px.box(df_traffic, x=x, y="traffic_volume")
-#    return fig
 
-def generate_chart(x,user_choice):  # function arguments come from the component property of the Input
+#1st function generates the interactive box and violin plots in tab 1
+#code adapted from https://plotly.com/python/box-plots/#box-plots-in-dash
+
+def generate_chart(x,user_choice):  # function arguments come from the component properties of the Inputs
         #print(type(user_choice))
         if user_choice == 'box':
             #df_year = df_traffic.groupby(df_traffic['Year']).aggregate({'traffic_volume':'mean'})
             fig = px.box(df_traffic, x=x, y="traffic_volume")
             
-
         elif user_choice == 'violin':
             fig = px.violin(df_traffic, x=x, y='traffic_volume', box=True)
-                         #points="all"
                          #labels={'Year': '', 'traffic_volume': 'average traffic volume'},
-                         #template="simple_white"
-        return fig  #'# '+user_choice 
+        return fig # '# '+user_choice 
 
 
-# Callback allows components to interact
 # 2nd callback refers to tab 2
 @callback(
     Output(mygraph, 'figure'),

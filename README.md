@@ -16,7 +16,11 @@ To set up your project:
 
 Add any instructions here for the markers on how to setup and run your Dash app.
 
+The app is ran by prompting 'python multi_page_app/app.py' in the IDE terminal
+
 Add the URL to your GitHub repo here e.g. https://github.com/ucl-comp0035name_of_your_repo
+
+https://github.com/ucl-comp0035/comp0034-cw1-i-zeynepandsoy.git
 
 # Visualisation design
 

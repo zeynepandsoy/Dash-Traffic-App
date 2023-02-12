@@ -29,11 +29,11 @@ df_traffic['traffic density'] = df_traffic['traffic volume'] / df_traffic['traff
 # Below code for app2 is implemented from:
 # https://github.com/Coding-with-Adam/Dash-by-Plotly/blob/master/Callbacks/Pattern%20Matching%20Callbacks/dynamic_callbacks.py
 
-layout = html.Div([
-    html.Div(children=[
+layout = dbc.Container([
+    dbc.Container(children=[
         html.Button('Add Chart', id='add-chart', n_clicks=0),
     ]),
-    html.Div(id='container', children=[])
+    dbc.Container(id='container', children=[])
 ])
 
 #layout = dbc.Container(children=[[mytitle], [mygraph], [dropdown]])
@@ -50,7 +50,7 @@ layout = html.Div([
 # when someone clicks n_clicks triggers below function
 def display_graphs(n_clicks, div_children):
     # new_child variable is an html.Div with many different childrens (graph,radioitem)
-    new_child = html.Div(
+    new_child = dbc.Container(
         style={'width': '45%', 'display': 'inline-block', 'outline': 'thin lightgrey solid', 'padding': 10},
         children=[
             dcc.Graph(
@@ -104,7 +104,7 @@ def display_graphs(n_clicks, div_children):
 #each time button is clicked another html.Div will be added in the list which goes in chrildren of cotainer (Output)
 #which goes in children=[] in main layout
 
-#DYNAMICAL CALLBACKS
+#DYNAMICAL CALLBACKS (Pattern Matching Callbacks)
 @callback(
     Output({'type': 'dynamic-graph', 'index': MATCH}, 'figure'),
     [Input(component_id={'type': 'dynamic-dpn-y', 'index': MATCH}, component_property='value'), #for year
