@@ -112,6 +112,7 @@ def display_graphs(n_clicks, div_children):
      Input(component_id={'type': 'dynamic-dpn-num', 'index': MATCH}, component_property='value'), #numerical values
      Input({'type': 'dynamic-choice', 'index': MATCH}, 'value')] 
 )
+#df_month = df_traffic[df_traffic['holiday'] != 'None']
 
 #as we have 4 inputs we have 4 argument (change their names)
 def update_graph(y_value, ctg_value, num_value, chart_choice):

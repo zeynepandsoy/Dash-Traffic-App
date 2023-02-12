@@ -20,14 +20,21 @@ cols = ['holiday', 'weather', 'traffic_volume', 'Year', 'Month', 'Day', 'Hour', 
 
 df_traffic = pd.read_excel(traffic_data_filepath, usecols=cols)
 
-df_traffic = df_traffic.reindex(['holiday','weather','categorized_hour','categorized_weekday', 'Year', 'Month', 'Day', 'Hour', 'traffic_volume'], axis=1)
-#print(df_traffic.head())
+date_cols=['Year','Month','Day']
+
+df_traffic['date'] = df_traffic[date_cols].apply(lambda x: '-'.join(x.values.astype(str)), axis="columns")
+#print(df_traffic.head(10))
+
+df_traffic['date']=pd.to_datetime(df_traffic['date'])
+
+df_traffic = df_traffic.reindex(['Year', 'Month', 'Day', 'Hour','date','holiday','weather','categorized_hour','categorized_weekday', 'traffic_volume'], axis=1)
+print(df_traffic.head())
 
 
 mytitle = dcc.Markdown(children='')
 mygraph = dcc.Graph(figure={})
-dropdown = dcc.Dropdown(options=df_traffic.columns.values[0:4],
-                        value='categorized_hour',  # initial value displayed when page first loads
+dropdown = dcc.Dropdown(options=df_traffic.columns.values[0:5],
+                        value='date',  # initial value displayed when page first loads
                         clearable=False)
 
 
@@ -75,24 +82,51 @@ layout = dbc.Container([
 
 
 def update_graph(user_input):  # function arguments come from the component property of the Input
-    if user_input == 'weather':
+    if user_input == 'Year':
          # Aggregate traffic volume hour description in a new dataframe 
-         df_wthr = df_traffic.groupby(df_traffic['weather']).aggregate({'traffic_volume':'mean'})
-         fig = px.bar(data_frame=df_wthr, x=df_wthr.index, y="traffic_volume")
+         df_year = df_traffic.groupby(df_traffic['Year']).aggregate({'traffic_volume':'mean'})
+         fig = px.line(df_year,
+                         x= df_year.index,
+                         y='traffic_volume',
+                         labels={'Year': '', 'traffic_volume': 'average traffic volume'},
+                         template="simple_white"
+                         )
 
-    elif user_input == 'holiday':
-        df_hldy = df_traffic[df_traffic['holiday'] != 'None']
-        df_trfc_hldy = df_hldy.groupby(df_hldy['holiday']).aggregate({'traffic_volume':'mean'})
-        fig = px.bar(data_frame=df_trfc_hldy, x=df_trfc_hldy.index, y="traffic_volume")
+    elif user_input == 'Month':
+        df_month = df_traffic.groupby(df_traffic['Month']).aggregate({'traffic_volume':'mean'})
+        fig = px.line(df_month,
+                    x= df_month.index,
+                    y='traffic_volume',
+                    labels={'Month': '', 'traffic_volume': 'average traffic volume'},
+                    template="simple_white"
+                    )
+        
 
-    elif user_input == 'categorized_hour':
-        df_hour = df_traffic.groupby(df_traffic['categorized_hour']).aggregate({'traffic_volume':'mean'})
+    elif user_input == 'Day':
+        df_day= df_traffic.groupby(df_traffic['Day']).aggregate({'traffic_volume':'mean'})
         #print(df_hour.head())
-        fig = px.pie(data_frame=df_hour, values='traffic_volume', names=df_hour.index)
-
-    elif user_input == 'categorized_weekday':
-        df_weekday= df_traffic.groupby(df_traffic['categorized_weekday']).aggregate({'traffic_volume':'mean'})
-        fig = px.pie(data_frame=df_weekday, values='traffic_volume', names=df_weekday.index)
+        fig = px.line(df_day,
+                    x= df_day.index,
+                    y='traffic_volume',
+                    labels={'Day': '', 'traffic_volume': 'average traffic volume'},
+                    template="simple_white"
+                    )
+    elif user_input == 'Hour':
+        df_hour= df_traffic.groupby(df_traffic['Hour']).aggregate({'traffic_volume':'mean'})
+        fig = px.line(df_hour,
+                    x= df_hour.index,
+                    y='traffic_volume',
+                    labels={'Hour': '', 'traffic_volume': 'average traffic volume'},
+                    template="simple_white"
+                    )
+    elif user_input == 'date':
+        df_date= df_traffic.groupby(df_traffic['date']).aggregate({'traffic_volume':'mean'})
+        fig = px.line(df_date,
+                    x= df_date.index,
+                    y='traffic_volume',
+                    labels={'date': '', 'traffic_volume': 'average traffic volume'},
+                    template="simple_white"
+                    )
     
 
     return fig , '# '+user_input  # returned objects are assigned to the component property of the Output
