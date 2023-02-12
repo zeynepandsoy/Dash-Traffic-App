@@ -80,9 +80,10 @@ layout = dbc.Container([
         dbc.Tab(label="Histograms", tab_id="histogram"),
     ],
 """
+#try to initialize 1st tab to open when app1 is clicked
 layout = dbc.Container([
     html.H1('Traffic Analysis App'),
-    dcc.Tabs(id="tabs-example-graph", value='tab-1-example-graph', children=[
+    dcc.Tabs(id="tabs-example-graph", value='tab-1-example-graph', children=[ 
         dcc.Tab(label='Tab One (date boxplot)', value='tab-1-boxplot'),
         dcc.Tab(label='Tab Two (date line chart)', value='tab-2-linechart'),
     ]),
