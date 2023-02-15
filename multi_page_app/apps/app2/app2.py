@@ -24,6 +24,7 @@ df_traffic.rename(columns={'traffic_volume': 'traffic volume', 'categorized_hour
 df_traffic['traffic density'] = df_traffic['traffic volume'] / df_traffic['traffic volume'].mean(axis=0)
 #print(df_traffic.head())
 #print(df_traffic[['traffic volume']].mean())
+ 
 
 
 # Below code for app2 is implemented from:
@@ -31,12 +32,13 @@ df_traffic['traffic density'] = df_traffic['traffic volume'] / df_traffic['traff
 
 layout = dbc.Container([
     dbc.Container(children=[
+        html.H2('Compare descriptive/categorical features impacts on traffic volume'),
+        html.H3('Recommended for reseachers'),
         html.Button('Add Chart', id='add-chart', n_clicks=0),
     ]),
     dbc.Container(id='container', children=[])
 ])
 
-#layout = dbc.Container(children=[[mytitle], [mygraph], [dropdown]])
 
 @callback(
     #state & input will be the arguments of below function, what is returned will go into the children of container(output)
@@ -84,8 +86,10 @@ def display_graphs(n_clicks, div_children):
                     'type': 'dynamic-dpn-ctg',
                     'index': n_clicks
                 },
+                #note that to see a clear comparison between different holidays, as categorized hour desciption,
+                #'night' must be selected as traffic volumes for holiday days are recorded only during 'night'
                 options=[{'label': c, 'value': c} for c in ['categorized hour', 'weather', 'categorized weekday','holiday']],
-                value='categorized hour',
+                value='categorized hour',  
                 clearable=False
             ),
             dcc.Dropdown(
@@ -107,24 +111,28 @@ def display_graphs(n_clicks, div_children):
 #DYNAMICAL CALLBACKS (Pattern Matching Callbacks)
 @callback(
     Output({'type': 'dynamic-graph', 'index': MATCH}, 'figure'),
-    [Input(component_id={'type': 'dynamic-dpn-y', 'index': MATCH}, component_property='value'), #for year
+    [Input(component_id={'type': 'dynamic-dpn-y', 'index': MATCH}, component_property='value'), #for categorical hour
      Input(component_id={'type': 'dynamic-dpn-ctg', 'index': MATCH}, component_property='value'), #categorical values
      Input(component_id={'type': 'dynamic-dpn-num', 'index': MATCH}, component_property='value'), #numerical values
      Input({'type': 'dynamic-choice', 'index': MATCH}, 'value')] 
 )
-#df_month = df_traffic[df_traffic['holiday'] != 'None']
 
 #as we have 4 inputs we have 4 argument (change their names)
 def update_graph(y_value, ctg_value, num_value, chart_choice):
     print(y_value)
+    
     # make a copy of the dataframe and filter the data such that it only has different categorized hours
     dff_traffic = df_traffic[df_traffic['categorized hour'].isin(y_value)]
+
+
     print(dff_traffic.head())
 
     if chart_choice == 'bar':
         dff_traffic = dff_traffic.groupby([ctg_value], as_index=False)[['traffic volume','traffic density']].mean()
         
         fig = px.bar(dff_traffic, x=ctg_value, y=num_value)
+        # update figure layout to ahcieve higher data-ink ratio (remove background colour, remove legends)
+        fig.update_layout(showlegend=False, paper_bgcolor = 'rgba(0, 0, 0, 0)', plot_bgcolor = 'rgba(0, 0, 0, 0)')
         return fig
     
     elif chart_choice == 'line':
@@ -133,8 +141,11 @@ def update_graph(y_value, ctg_value, num_value, chart_choice):
         else:
             dff_traffic = dff_traffic.groupby([ctg_value, 'Year'], as_index=False)[['traffic volume','traffic density']].mean()
             fig = px.line(dff_traffic, x='Year', y=num_value, color=ctg_value)
+            fig.update_layout(showlegend=False, paper_bgcolor = 'rgba(0, 0, 0, 0)', plot_bgcolor = 'rgba(0, 0, 0, 0)')
             return fig
+        
     elif chart_choice == 'pie':
         fig = px.pie(dff_traffic, names=ctg_value, values=num_value)
+        fig.update_layout(paper_bgcolor = 'rgba(0, 0, 0, 0)', plot_bgcolor = 'rgba(0, 0, 0, 0)')
         return fig
 

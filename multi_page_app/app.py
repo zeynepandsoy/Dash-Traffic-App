@@ -1,11 +1,10 @@
 # import necessary libraries
 import dash
-from dash import callback
 from dash import Dash, html, dcc
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
-#from app import app
+#from app import home
 #from apps import app1, app2
 
 #Create Dash app instance and as argument pass Bootstrap flatly template to achieve consistent sytling in each page of the app
@@ -43,6 +42,7 @@ app.layout = dbc.Container(
         dash.page_container
       ]
 )
+
 
 # run the Dash app
 if __name__ == "__main__":

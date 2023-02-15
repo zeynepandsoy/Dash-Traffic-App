@@ -16,7 +16,7 @@ import pandas as pd
 import plotly.express as px
 from pathlib import Path
 
-dash.register_page(__name__) #path='/'
+dash.register_page(__name__) 
 
 # Define the path to excel datafile
 traffic_data_filepath = Path(__file__).parent.joinpath('data', 'data_set_prepared.xlsx')
@@ -44,7 +44,7 @@ df_agg_trfc = df_traffic.groupby('date').aggregate({'traffic_volume':'mean'}) # 
 df_traffic_app2 = df_traffic.reindex(['Year', 'Month', 'Day', 'Hour','date','holiday','weather','categorized_hour','categorized_weekday', 'traffic_volume'], axis=1)
 #print(df_traffic_app2.head())
 
-#dash components for app2
+#dash components for tab2
 mytitle = dcc.Markdown(children='')
 mygraph = dcc.Graph(figure={})
 dropdown = dcc.Dropdown(options=df_traffic_app2.columns.values[0:5],
@@ -61,57 +61,32 @@ dropdown = dcc.Dropdown(options=df_traffic_app2.columns.values[0:5],
 #graph should display average traffic volumes based on date (working code based on year in docs) try to add animation
 #add a date picker when a user enters/submits a date show its max and min values
 
-"""
-datepicker = dcc.DatePickerSingle(
-    id='my-date-picker-single',
-    min_date_allowed=date(2012, 10, 2),
-    max_date_allowed=date(2018, 9, 30),
-    initial_visible_month=date(2012, 10, 2),
-    date = date(2012, 10, 2) #degistir
-)
 
-below is example in dbc container
-
-layout = dbc.Container([
-    html.H1('Dash Tabs component demo'),
-    dbc.Tabs(
-    [
-        dbc.Tab(label="Scatter", tab_id="scatter"),
-        dbc.Tab(label="Histograms", tab_id="histogram"),
-    ],
-"""
 tab_style = {
     'borderBottom': '1px solid #d6d6d6',
     'padding': '6px',
     'fontWeight': 'bold'
 }
 
-tab_selected_style = {
-    'borderTop': '1px solid #d6d6d6',
-    'borderBottom': '1px solid #d6d6d6',
-    'backgroundColor': '#119DFF',
-    'color': 'white',
-    'padding': '6px'
-}
-
-#try to initialize 1st tab to open when app1 is clicked
 layout = dbc.Container([
-    html.H1('Traffic Analysis App'),
-    dcc.Tabs(id="tabs-example-graph", value='tab-1-example-graph', children=[ 
-        dcc.Tab(label='Tab One (date boxplot)', value='tab-1-boxplot',style=tab_style, selected_style=tab_selected_style),
-        dcc.Tab(label='Tab Two (date line chart)', value='tab-2-linechart',style=tab_style, selected_style=tab_selected_style),
+    html.H2('Impact of different date features on traffic volumes'),
+    html.H3('Recommended for general public'),
+    dbc.Tabs(id="tabs-example-graph", active_tab='tab-1-boxplot', children=[ 
+        dbc.Tab(label='Distribution Plot over date features', tab_id='tab-1-boxplot',style=tab_style),
+        dbc.Tab(label='Line Chart over date features ', tab_id='tab-2-linechart',style=tab_style),
     ]),
     dbc.Container(id='tabs-content-example-graph') 
 ])
 
 @callback(Output('tabs-content-example-graph', 'children'),
-              Input('tabs-example-graph', 'value'))
+              Input('tabs-example-graph', 'active_tab')) #active_tab was value
+
 
 def render_content(tab):
     if tab == 'tab-1-boxplot':
         return dbc.Container([
-            html.H3("Box Plot of I-94 ATR 301 westbound traffic volume over different date time features"),
-            html.P("x-axis:"),
+            html.H3("Distribution Plot of traffic volumes over different date time features"),
+            html.P("Choose x-axis and type of distribution plot:"),
             dcc.Checklist(
                 id='x-axis', 
                 options=['Year', 'Month', 'Day', 'Hour'],
@@ -126,12 +101,12 @@ def render_content(tab):
         
             ),
             dcc.Graph(id="tab2-plot-figure",figure={})   
-        ])
+        ], fluid=True)
 
 
     elif tab == 'tab-2-linechart':
         return dbc.Container([
-            html.H3("Line Chart of Hourly I-94 ATR 301 westbound traffic volume over different date time features"),
+            html.H3("Line Chart of traffic volumes over different date time features"),
             dbc.Row([
                 dbc.Col([mytitle], width=6)
             ], justify='center'),
@@ -142,7 +117,7 @@ def render_content(tab):
                 dbc.Col([dropdown], width=6)
             ], justify='center'),
 
-]) #, fluid=True
+], fluid=True) 
             
        
 # Callback allows components to interact
@@ -160,12 +135,20 @@ def render_content(tab):
 def generate_chart(x,user_choice):  # function arguments come from the component properties of the Inputs
         #print(type(user_choice))
         if user_choice == 'box':
-            #df_year = df_traffic.groupby(df_traffic['Year']).aggregate({'traffic_volume':'mean'})
-            fig = px.box(df_traffic, x=x, y="traffic_volume")
+            fig = px.box(df_traffic, 
+                         x=x, 
+                         y="traffic_volume",
+                         labels={'traffic_volume': 'traffic volume'})
             
         elif user_choice == 'violin':
-            fig = px.violin(df_traffic, x=x, y='traffic_volume', box=True)
-                         #labels={'Year': '', 'traffic_volume': 'average traffic volume'},
+            fig = px.violin(df_traffic, 
+                            x=x, 
+                            y='traffic_volume',
+                            labels={'traffic_volume': 'traffic volume'},
+                            box=True)
+
+         # remove legends and backgorund color of the figures               
+        fig.update_layout(showlegend=False, paper_bgcolor = 'rgba(0, 0, 0, 0)', plot_bgcolor = 'rgba(0, 0, 0, 0)' )
         return fig # '# '+user_choice 
 
 
@@ -222,95 +205,9 @@ def update_graph(user_input):  # function arguments come from the component prop
                     labels={'date': '', 'traffic_volume': 'average traffic volume'},
                     template="simple_white"
                     )
-    
-
+    # update figure layout such that axis lines are hidden
+    fig.update_xaxes(showline=False)
+    fig.update_yaxes(showline=False) 
     return fig , '# '+user_input  # returned objects are assigned to the component property of the Output
 
-"""
-#code adapted from https://plotly.com/python/box-plots/#box-plots-in-dash
 
-layout = dbc.Container(
-     [
-            dbc.Navbar(
-            [
-                dbc.NavItem(
-                    [
-                        dbc.NavLink(
-                            page["name"],
-                            href=(page["relative_path"]),
-                            className="nav-link",
-                        )
-                        for page in dash.page_registry.values()
-                    ],
-                    className="nav-item",
-                ),
-            ],
-            className="navbar navbar-dark bg-primary",
-        ),
-        #  dash.page_container,
-    html.H4("Box Plot of Hourly I-94 ATR 301 westbound traffic volume over different date time features"),
-    html.H2("Observe traffic volume over time"),
-    html.P("x-axis:"),
-    dcc.Checklist(
-        id='x-axis', 
-        options=['Year', 'Month', 'Day', 'Hour'],
-        value=['Year'], 
-        inline=True
-    ),
-    #datepicker,
-    dcc.Graph(id="graph"),
-])
-
-# Callback allows components to interact
-@callback(
-    Output("graph", "figure"), 
-    #Output("my-date-picker-single", 'children'),
-    Input("x-axis", "value"),
-    #Input("my-date-picker-single", 'date')
-   )
-
-def generate_chart(x):  # function arguments come from the component property of the Input
-    #print(x)
-    #df_year = df_traffic.groupby(df_traffic['Year']).aggregate({'traffic_volume':'mean'})
-    fig = px.box(df_traffic, x=x, y="traffic_volume")
-    return fig
-
-not working
-def update_output(date_value):
-    string_prefix = 'You have selected: '
-    if date_value is not None:
-        date_object = date.fromisoformat(date_value)
-        date_string = date_object.strftime('%B %d, %Y')
-        return string_prefix + date_string
-"""
-
-"""
-line_traffic = px.line(df_agg_trfc,
-                         x= df_agg_trfc.index,
-                         y='traffic_volume',
-                         labels={'Year': '', 'traffic_volume': 'average traffic volume'},
-                         template="simple_white"
-                         )
-
-box_traffic = px.violin(df_traffic,
-                         x='Month',
-                         y='traffic_volume',
-                         box=True, # draw box plot inside the violin
-                         #points="all"
-                         #labels={'Year': '', 'traffic_volume': 'average traffic volume'},
-                         #template="simple_white"
-                         )
-
-
-layout = dbc.Container(
-   [
-       html.H1("Traffic app Dashboard"),
-       html.H2("Observe traffic volume over time"),
-       dcc.Graph(
-           id='box-traffic',
-           figure=box_traffic
-       ),
-   ],
-   fluid=True,
-)
-"""

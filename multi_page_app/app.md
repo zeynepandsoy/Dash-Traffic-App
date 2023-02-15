@@ -1,5 +1,0 @@
-callback is built from a callback decorator and a function
-callback decorator includes an Input and Output both have the component name as input (intead of component ID component names are used) and they will have the component property belonging to that component
-in the first callback decorator item uses the ('children')property of (mytext) and second item in callback decorator uses the ('value') property of (myinput) - noth mytext and myinput is defined above  
-
-callback function has the callback argument and a returned value (function argument comes from the component property of the input(value of myinput )) returned objects are assigned to the component property of the output(children of myoutput) (if you have multiple outputs, return multiple values, if you have multiple inputs return multiple arguments)
