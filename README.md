@@ -20,7 +20,7 @@ URL to my GitHub repo: https://github.com/ucl-comp0035/comp0034-cw1-i-zeynepands
 
 # Visualisation design
 
-Evidence of Visualisation design is provided as a seperate pdf file in the repository 
+Evidence of Visualisation design is provided as a seperate pdf file in the repository called 'Visualization Design.pdf'
 
 
 # Dash app
