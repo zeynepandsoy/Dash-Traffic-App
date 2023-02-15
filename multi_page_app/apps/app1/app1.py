@@ -65,11 +65,12 @@ def render_content(tab):
 
     Parameters
     ----------
-    tab: component property ('active_tab') of the input with component id 'tabs-example-graph'
+    tab: str
+    component property ('active_tab') of the input with component id 'tabs-example-graph'
 
     Returns
     ----------
-    layout of selected tab ('children')
+    None
     """
     if tab == 'tab-1-boxplot':
         return dbc.Container([

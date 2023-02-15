@@ -67,6 +67,7 @@ def display_graphs(n_clicks, div_children):
 
     Returns
     ----------
+    div_children: list
     each time button is clicked another html.Div will be added in the list which goes in the 'children'
     of container (Output), which goes in children=[] in main layout   
 
