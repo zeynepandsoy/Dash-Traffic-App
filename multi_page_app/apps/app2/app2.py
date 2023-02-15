@@ -1,35 +1,39 @@
-import dash  # version 1.13.1
-from dash import dcc
-from dash import html, callback
+#import necessary packages
+import dash  
+from dash import dcc, html, callback
 import dash_bootstrap_components as dbc
+#'ALL', 'MATCH' and 'ALLSMALLER' are pattern matching (dynamical) callbacks
 from dash.dependencies import Input, Output, ALL, State, MATCH, ALLSMALLER
+
+#import helper functions for graphs
 import plotly.express as px
 import pandas as pd
 import numpy as np
 from pathlib import Path
 
+# Define the path to the page
 dash.register_page(__name__)
 
 
+# Define the path to excel datafile
 traffic_data_filepath = Path(__file__).parent.joinpath('data', 'data_set_prepared.xlsx')
 
 cols = ['holiday', 'weather', 'traffic_volume', 'Year', 'Month', 'Day', 'Hour', 'categorized_hour', 'categorized_weekday']
 
 df_traffic = pd.read_excel(traffic_data_filepath, usecols=cols)
 
-
+# Rename columns for visual aesthetics
 df_traffic.rename(columns={'traffic_volume': 'traffic volume', 'categorized_hour': 'categorized hour', 'categorized_weekday': 'categorized weekday'}, inplace=True)
 
-# create a new column; traffic density, dividing each subsequent traffic volume entry by its overall mean
+# Dividing each subsequent traffic volume entry by its overall mean, create a new 'traffic density' column
 df_traffic['traffic density'] = df_traffic['traffic volume'] / df_traffic['traffic volume'].mean(axis=0)
-#print(df_traffic.head())
 #print(df_traffic[['traffic volume']].mean())
  
 
+# Below code for app2 is adapted from code written by user 'Coding-with-Adam' on Github
+# Code Available at: https://github.com/Coding-with-Adam/Dash-by-Plotly/blob/master/Callbacks/Pattern%20Matching%20Callbacks/dynamic_callbacks.py
 
-# Below code for app2 is implemented from:
-# https://github.com/Coding-with-Adam/Dash-by-Plotly/blob/master/Callbacks/Pattern%20Matching%20Callbacks/dynamic_callbacks.py
-
+# initial layout only has an html button and empty container
 layout = dbc.Container([
     dbc.Container(children=[
         html.H2('Compare descriptive/categorical features impacts on traffic volume'),
@@ -41,17 +45,33 @@ layout = dbc.Container([
 
 
 @callback(
-    #state & input will be the arguments of below function, what is returned will go into the children of container(output)
     Output('container', 'children'), 
-    [Input('add-chart', 'n_clicks')], #take the n_clicks of the add-chart component id (button)
-    [State('container', 'children')] #take the state of component children which is Div that is empty list []
+    [Input('add-chart', 'n_clicks')], 
+    [State('container', 'children')] 
 )
 
 
-# 'n_clicks'of Input and 'children' of State is arguments of fuction
-# when someone clicks n_clicks triggers below function
 def display_graphs(n_clicks, div_children):
-    # new_child variable is an html.Div with many different childrens (graph,radioitem)
+    """
+    This function  generates a new figure for every click on 'add chart' 
+    (Appends 'new_child' to 'div_children' for every click)
+    
+    Parameters
+    ----------
+    n_clicks: int
+    component property of the Input with component id: 'add-chart' (number of clicks to 'add-chart')
+    div_children: list
+    component property of the State with component id: 'children' which is Div that is initially []
+
+    Note: only 'n_clicks'(Input) triggers the function 
+
+    Returns
+    ----------
+    each time button is clicked another html.Div will be added in the list which goes in the 'children'
+    of container (Output), which goes in children=[] in main layout   
+
+    """
+    # new_child variable is an html.Div with many different childrens
     new_child = dbc.Container(
         style={'width': '45%', 'display': 'inline-block', 'outline': 'thin lightgrey solid', 'padding': 10},
         children=[
@@ -86,8 +106,6 @@ def display_graphs(n_clicks, div_children):
                     'type': 'dynamic-dpn-ctg',
                     'index': n_clicks
                 },
-                #note that to see a clear comparison between different holidays, as categorized hour desciption,
-                #'night' must be selected as traffic volumes for holiday days are recorded only during 'night'
                 options=[{'label': c, 'value': c} for c in ['categorized hour', 'weather', 'categorized weekday','holiday']],
                 value='categorized hour',  
                 clearable=False
@@ -103,35 +121,61 @@ def display_graphs(n_clicks, div_children):
             )
         ]
     )
-    div_children.append(new_child) #new_child will be appended to div_children (children of state:[])
+    # Append 'new_child' to 'div_children' (children of state:[])
+    div_children.append(new_child) 
     return div_children  
-#each time button is clicked another html.Div will be added in the list which goes in chrildren of cotainer (Output)
-#which goes in children=[] in main layout
+
+
 
 #DYNAMICAL CALLBACKS (Pattern Matching Callbacks)
 @callback(
     Output({'type': 'dynamic-graph', 'index': MATCH}, 'figure'),
-    [Input(component_id={'type': 'dynamic-dpn-y', 'index': MATCH}, component_property='value'), #for categorical hour
-     Input(component_id={'type': 'dynamic-dpn-ctg', 'index': MATCH}, component_property='value'), #categorical values
-     Input(component_id={'type': 'dynamic-dpn-num', 'index': MATCH}, component_property='value'), #numerical values
+    [Input(component_id={'type': 'dynamic-dpn-y', 'index': MATCH}, component_property='value'), 
+     Input(component_id={'type': 'dynamic-dpn-ctg', 'index': MATCH}, component_property='value'), 
+     Input(component_id={'type': 'dynamic-dpn-num', 'index': MATCH}, component_property='value'), 
      Input({'type': 'dynamic-choice', 'index': MATCH}, 'value')] 
 )
 
-#as we have 4 inputs we have 4 argument (change their names)
+
 def update_graph(y_value, ctg_value, num_value, chart_choice):
+    """
+    This function generates the 3 different types of plots (line, bar, pie) based multiple user inputs
+
+    Parameters
+    ----------
+    (as there are 4 inputs, the function has 4 arguments)
+
+    chart_choice: str
+    'value' of 'dynamic-choice' (radioitem of chart choice)
+
+    num_value: str
+    'value' of 'dynamic-dpn-num' (dropdown of numerical traffic values)
+
+    ctg_value: str
+    'value' of 'dynamic-dpn-ctg' (dropdown of categorical features)
+
+    y_value: list
+    'value' of 'dynamic-dpn-y' (dropdown of unique catgeorized hour values)
+
+    Note: To see a clear comparison between different holidays, as categorized hour desciption,
+    'night' must be selected as traffic volumes for holiday days are recorded only at 'night'
+    
+    Returns
+    ----------
+    fig: Figure
+    'figure' with 'dynamic-graph'
+
+    """
     print(y_value)
     
-    # make a copy of the dataframe and filter the data such that it only has different categorized hours
+    # copy & filter the data such that it only has different categorized hours
     dff_traffic = df_traffic[df_traffic['categorized hour'].isin(y_value)]
-
-
-    print(dff_traffic.head())
+    #print(dff_traffic.head())
 
     if chart_choice == 'bar':
         dff_traffic = dff_traffic.groupby([ctg_value], as_index=False)[['traffic volume','traffic density']].mean()
-        
         fig = px.bar(dff_traffic, x=ctg_value, y=num_value)
-        # update figure layout to ahcieve higher data-ink ratio (remove background colour, remove legends)
+        # Increase data-ink ratio by removing background colour and removing legends)
         fig.update_layout(showlegend=False, paper_bgcolor = 'rgba(0, 0, 0, 0)', plot_bgcolor = 'rgba(0, 0, 0, 0)')
         return fig
     

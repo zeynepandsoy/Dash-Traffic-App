@@ -1,13 +1,10 @@
 # import necessary libraries
 import dash
-from dash import Dash, html, dcc
-from dash.dependencies import Input, Output
+from dash import Dash
 import dash_bootstrap_components as dbc
 
-#from app import home
-#from apps import app1, app2
 
-#Create Dash app instance and as argument pass Bootstrap flatly template to achieve consistent sytling in each page of the app
+#Create Dash app instance, as argument pass Bootstrap flatly template to achieve consistent sytling in each page 
 app = Dash(
     __name__,
     use_pages=True,
@@ -19,8 +16,10 @@ app = Dash(
     ]
 )
 
-# navbar is initialized in app.layout linking the path to each page
-# Navbar https://community.plotly.com/t/introducing-dash-pages-a-dash-2-x-feature-preview/57775
+
+# Below code for Navbar is adapted from Chris Parmer's -Co-founder of Plotly, Author of Dash- feature preview of '/pages'
+# Available at community.plotly: https://community.plotly.com/t/introducing-dash-pages-a-dash-2-x-feature-preview/57775
+
 app.layout = dbc.Container(
       [
           dbc.Navbar(

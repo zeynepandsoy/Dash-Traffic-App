@@ -20,8 +20,7 @@ URL to my GitHub repo: https://github.com/ucl-comp0035/comp0034-cw1-i-zeynepands
 
 # Visualisation design
 
-Add evidence here.
-
+Evidence of Visualisation design is provided as a seperate pdf file in the repository 
 
 
 # Dash app
@@ -39,11 +38,11 @@ Dash app is initialized in `app.py` where I used a Dash Bootstrap theme; Flatly,
 Compared to regular callbacks, dynamical callbacks allow the users much more flexibility and control over the graphs and web components inside the dashboards. For instance, the functionality that allows the generation of new plots is done through dynamical callbacks (initial layout of the page only includes a button). In dynamical callbacks, the input of dropdown options is instead of strings, dictionaries (component ids) consisting of `type` and `index`. All dcc components have been defined with an `index` of `n_clicks` (number of clicks on ‘add chart’) and in the dynamical callbacks the component ids are MATCHed with the component properties. As each interactive component is matched with the number of clicks to ‘add chart’ button, users can generate and compare multiple figures at the same time by playing around with almost every element of the figures. This encourages especially researchers to take control over the types of relationships they wish to explore in more in depth and easily spot and discover patterns with the functionality to see numerous graphs fitted in the same screen.
 
 
-*Problems I faced:*
+**Problems I faced:**
 
 1. I tried to change the navigation bar so that instead of being fixed at the top, it would be a sidebar as I though that the content would fit better in the layout. However, the sidebar ended up covering over the content so I kept the navigation bar linking each page displayed fixed at the top of of each page (instead of a side bar)    
 
-Code for sidebar in app1.py (didn't work):
+*Code for sidebar in app1.py (didn't work):*
 
 ```
 # the style arguments for the sidebar. We use position:fixed and a fixed width
@@ -110,7 +109,7 @@ def render_page_content(pathname):
 
 2.	I tried to add a date picker (dash core component) to app1 such that the users can input a date from the selected range (min and max date of traffic volume records) and get the aggregate (hour must be aggregated as date picker doesn’t include hour) traffic volumes for their date input. However, I kept getting callback errors, so instead I decided to create the 2nd tab of app1 where aggregate date time features are plotted over traffic volumes (line plot)
 
-Code for `dcc.DatePickerSingle` in app1.py (didn't work):
+*Code for `dcc.DatePickerSingle` in app1.py (didn't work):*
 
 ```
 # dash core component date picker single
@@ -122,7 +121,7 @@ datepicker = dcc.DatePickerSingle(
    date = date(2012, 10, 2)
 )
 
-Note: in layout: ’datepicker’ (before graph) 
+# Note: in layout: ’datepicker’ (before graph) 
 
 @callback(
    Output("my-date-picker-single", 'children'),

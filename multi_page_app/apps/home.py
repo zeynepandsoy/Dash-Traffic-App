@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 #define path to the home page
 dash.register_page(__name__, path='/')
 
-#Using direct image file path
+# define path to the image using direct image file path
 image_path = 'assets/Google-Maps:I-94.png'
 
 

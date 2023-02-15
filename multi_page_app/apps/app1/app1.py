@@ -1,21 +1,15 @@
 # Import the required packages
-#import Dash, HTML, Dash Core Components and Input/Output (interactivity)
 import dash
 from dash import callback
-from dash import Dash, Input, Output, html, dcc
-# import Dash Bootsrap Components
+from dash import Input, Output, html, dcc
 import dash_bootstrap_components as dbc
-
-#from multi_page_app.app import app
-#from app import app
-
-from datetime import date
 
 #import helper functions to create the charts
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
 
+# Define the path to the page
 dash.register_page(__name__) 
 
 # Define the path to excel datafile
@@ -27,41 +21,24 @@ df_traffic = pd.read_excel(traffic_data_filepath, usecols=cols)
 #print(df_traffic.head(20))
 
 
-#create a new datetime column and use it to show different traffic entries based on user input on calendar
-
+#create a new 'date' column and make it a datetime object
 date_cols=['Year','Month','Day']
 
 df_traffic['date'] = df_traffic[date_cols].apply(lambda x: '-'.join(x.values.astype(str)), axis="columns")
 #print(df_traffic.head(10))
-
 df_traffic['date']=pd.to_datetime(df_traffic['date'])
 
-#aggregate traffic volume over years
-df_agg_trfc = df_traffic.groupby('date').aggregate({'traffic_volume':'mean'}) # changed this to 'Day' from 'Year'
-#print(df_agg_trfc.head(10))
 
-#2nd app inputs
-df_traffic_app2 = df_traffic.reindex(['Year', 'Month', 'Day', 'Hour','date','holiday','weather','categorized_hour','categorized_weekday', 'traffic_volume'], axis=1)
-#print(df_traffic_app2.head())
+df_traffic_tab2 = df_traffic.reindex(['Year', 'Month', 'Day', 'Hour','date','holiday','weather','categorized_hour','categorized_weekday', 'traffic_volume'], axis=1)
 
 #dash components for tab2
 mytitle = dcc.Markdown(children='')
 mygraph = dcc.Graph(figure={})
-dropdown = dcc.Dropdown(options=df_traffic_app2.columns.values[0:5],
+dropdown = dcc.Dropdown(options=df_traffic_tab2.columns.values[0:5],
                         value='date',  # initial value displayed when page first loads
                         clearable=False)
 
-
-#this app will display average traffic volume over the years and (will be added: calendar
-# functionality)
-
-# Dash components 
-
-
-#graph should display average traffic volumes based on date (working code based on year in docs) try to add animation
-#add a date picker when a user enters/submits a date show its max and min values
-
-
+# styling of tabs
 tab_style = {
     'borderBottom': '1px solid #d6d6d6',
     'padding': '6px',
@@ -79,10 +56,21 @@ layout = dbc.Container([
 ])
 
 @callback(Output('tabs-content-example-graph', 'children'),
-              Input('tabs-example-graph', 'active_tab')) #active_tab was value
+              Input('tabs-example-graph', 'active_tab')) 
 
 
 def render_content(tab):
+    """
+    This function renders the layout of selected tab wrapped in a dbc container
+
+    Parameters
+    ----------
+    tab: component property ('active_tab') of the input with component id 'tabs-example-graph'
+
+    Returns
+    ----------
+    layout of selected tab ('children')
+    """
     if tab == 'tab-1-boxplot':
         return dbc.Container([
             html.H3("Distribution Plot of traffic volumes over different date time features"),
@@ -100,7 +88,7 @@ def render_content(tab):
                 value = 'box'
         
             ),
-            dcc.Graph(id="tab2-plot-figure",figure={})   
+            dcc.Graph(id="tab1-plot-figure",figure={})   
         ], fluid=True)
 
 
@@ -119,20 +107,34 @@ def render_content(tab):
 
 ], fluid=True) 
             
-       
-# Callback allows components to interact
-#1st callback refers to tab1
+     
+# Callbacks for tab 1
 @callback(
-    Output("tab2-plot-figure",'figure'), 
-    Input("x-axis", 'value'),  # user input for x-axis selected from dropdown menu
-    Input("distribution-plot-choice",'value')  # user input of distribution plot type selected from RadioItem
+    Output("tab1-plot-figure",'figure'), 
+    Input("x-axis", 'value'),  
+    Input("distribution-plot-choice",'value')  
    )
 
 
-#1st function generates the interactive box and violin plots in tab 1
-#code adapted from https://plotly.com/python/box-plots/#box-plots-in-dash
+def generate_chart(x,user_choice):  
+    #Adapted from Plotly documentation code of box-plots 
+    #Available at https://plotly.com/python/box-plots/#box-plots-in-dash
+        """
+        This function generates the interactive box and violin plots
+        function arguments come from the component properties of the Inputs
 
-def generate_chart(x,user_choice):  # function arguments come from the component properties of the Inputs
+        Parameters
+        ----------
+        x: str
+        component property of 'x-axis' (user input for x-axis selected from dropdown menu)
+        user_choice: str
+        component property of 'distribution-plot-choice' (user input of distribution plot type selected from RadioItem)
+
+        Returns
+        ----------
+        fig: Figure
+        'figure' with component id "tab1-plot-figure"
+        """
         #print(type(user_choice))
         if user_choice == 'box':
             fig = px.box(df_traffic, 
@@ -147,19 +149,38 @@ def generate_chart(x,user_choice):  # function arguments come from the component
                             labels={'traffic_volume': 'traffic volume'},
                             box=True)
 
-         # remove legends and backgorund color of the figures               
+        # remove legends and background color of the figures (less is more effective)              
         fig.update_layout(showlegend=False, paper_bgcolor = 'rgba(0, 0, 0, 0)', plot_bgcolor = 'rgba(0, 0, 0, 0)' )
-        return fig # '# '+user_choice 
+        return fig 
 
 
-# 2nd callback refers to tab 2
+# Callbacks for tab 2
 @callback(
     Output(mygraph, 'figure'),
     Output(mytitle, 'children'),
     Input(dropdown, 'value')
 )
-#2nd function generates the aggragate traffic volume line plot based on user choice from different date features presented in the dropdown
-def update_graph(user_input):  # function arguments come from the component property of the Input
+
+def update_graph(user_input): 
+    """
+    This function generates the aggragate traffic volume line plot based of date features.
+
+    Parameters
+    ----------
+    (function arguments come from the component property of the Input)
+    user_input: str
+    value of dropdown (user choice from different date features presented)
+
+    Returns
+    ----------
+    (returned objects are assigned to the component property of the Outputs ('mytitle' & 'mygraph'))
+    fig: Figure
+    'figure' of mygraph
+
+    '# '+user_input: str
+    'children' of mytitle
+
+    """
     if user_input == 'Year':
          # Aggregate traffic volume hour description in a new dataframe 
          df_year = df_traffic.groupby(df_traffic['Year']).aggregate({'traffic_volume':'mean'})
@@ -208,6 +229,7 @@ def update_graph(user_input):  # function arguments come from the component prop
     # update figure layout such that axis lines are hidden
     fig.update_xaxes(showline=False)
     fig.update_yaxes(showline=False) 
-    return fig , '# '+user_input  # returned objects are assigned to the component property of the Output
+    return fig , '# '+user_input 
+     
 
 
