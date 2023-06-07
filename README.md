@@ -1,7 +1,7 @@
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-c66648af7eb3fe8bc4f294546bfd86ef473780cde1dea487d3c4ff354943c9ae.svg)](https://classroom.github.com/online_ide?assignment_repo_id=9743602&assignment_repo_type=AssignmentRepo)
-# COMP0034 Coursework 1 template repository
+# COMP0034 Coursework 1: Traffic Monitoring App (Dash)
 
-To set up your project:
+To set up the project:
 
 1. Clone this repository in your IDE (e.g. PyCharm, Visual Studio Code) from GitHub. Follow the help in your IDE
    e.g. [clone a GitHub repo in PyCharm.](https://www.jetbrains.com/help/pycharm/manage-projects-hosted-on-github.html#clone-from-GitHub)
@@ -14,16 +14,9 @@ To set up your project:
 
 # Set-up instructions
 
-The app is ran by prompting 'python multi_page_app/app.py' in the IDE terminal
+To run the app, execute 'python multi_page_app/app.py' in your IDE terminal.
 
-URL to my GitHub repo: https://github.com/ucl-comp0035/comp0034-cw1-i-zeynepandsoy.git
-
-# Visualisation design
-
-Evidence of Visualisation design is provided as a seperate pdf file in the repository called 'Visualization Design.pdf'
-
-
-# Dash app
+# Functionality & Context of the Application
 
 The traffic dashboard application is intended for comparison of different elements and revealing relationships/connections between different features that impact traffic volume. The app is designed as multi-page to address the needs of both target audiences -general public living/working proximity to I-94 and environmental policymakers/researchers. Specifically, app1 focuses on comparisons between impacts of different date time features on traffic volume and app2 mainly focuses on revealing relationships (comparing) between categorical features and traffic volumes. Though it does not have to be the case, app 2 is more recommended to researchers as it creates a platform where additional graphs can be easily plotted further manipulating the desired features while app 1 is relatively more straightforward to use.
 
@@ -37,110 +30,3 @@ Dash app is initialized in `app.py` where I used a Dash Bootstrap theme; Flatly,
 
 Compared to regular callbacks, dynamical callbacks allow the users much more flexibility and control over the graphs and web components inside the dashboards. For instance, the functionality that allows the generation of new plots is done through dynamical callbacks (initial layout of the page only includes a button). In dynamical callbacks, the input of dropdown options is instead of strings, dictionaries (component ids) consisting of `type` and `index`. All dcc components have been defined with an `index` of `n_clicks` (number of clicks on ‘add chart’) and in the dynamical callbacks the component ids are MATCHed with the component properties. As each interactive component is matched with the number of clicks to ‘add chart’ button, users can generate and compare multiple figures at the same time by playing around with almost every element of the figures. This encourages especially researchers to take control over the types of relationships they wish to explore in more in depth and easily spot and discover patterns with the functionality to see numerous graphs fitted in the same screen.
 
-
-**Problems I faced:**
-
-1. I tried to change the navigation bar so that instead of being fixed at the top, it would be a sidebar as I though that the content would fit better in the layout. However, the sidebar ended up covering over the content so I kept the navigation bar linking each page displayed fixed at the top of of each page (instead of a side bar)    
-
-*Code for sidebar in app1.py (didn't work):*
-
-```
-# the style arguments for the sidebar. We use position:fixed and a fixed width
-SIDEBAR_STYLE = {
-   "position": "fixed",
-   "top": 0,
-   "left": 0,
-   "bottom": 0,
-   "width": "16rem",
-   "padding": "2rem 1rem",
-   "background-color": "#f8f9fa",
-}
-
-# the styles for the main content position it to the right of the sidebar and
-# add some padding.
-CONTENT_STYLE = {
-   "margin-left": "18rem",
-   "margin-right": "2rem",
-   "padding": "2rem 1rem",
-}
-sidebar = html.Div(
-   [
-       html.H2("Sidebar", className="display-4"),
-       html.Hr(),
-       html.P(
-           "A simple sidebar layout with navigation links", className="lead"
-       ),
-       dbc.Nav(
-           [
-               dbc.NavLink("Home", href="/", active="exact"),
-               dbc.NavLink("Page 1", href="/apps/app1", active="exact"),
-               dbc.NavLink("Page 2", href="/apps/app2", active="exact"),
-           ],
-           vertical=True,
-           pills=True,
-       ),
-   ],
-   style=SIDEBAR_STYLE,
-)
-
-content = html.Div(id="page-content", style=CONTENT_STYLE)
-
-app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
-
-
-@app.callback(Output("page-content", "children"), [Input("url", "pathname")])
-def render_page_content(pathname):
-   if pathname == "/":
-       return home.layout
-   elif pathname == "/apps/app1":
-       return app1.layout
-   elif pathname == "/apps/app2":
-       return app2.layout
-   # If the user tries to reach a different page, return a 404 message
-   return html.Div(
-       [
-           html.H1("404: Not found", className="text-danger"),
-           html.Hr(),
-           html.P(f"The pathname {pathname} was not recognised..."),
-       ],
-       className="p-3 bg-light rounded-3",
-   )
-```
-
-2.	I tried to add a date picker (dash core component) to app1 such that the users can input a date from the selected range (min and max date of traffic volume records) and get the aggregate (hour must be aggregated as date picker doesn’t include hour) traffic volumes for their date input. However, I kept getting callback errors, so instead I decided to create the 2nd tab of app1 where aggregate date time features are plotted over traffic volumes (line plot)
-
-*Code for `dcc.DatePickerSingle` in app1.py (didn't work):*
-
-```
-# dash core component date picker single
-datepicker = dcc.DatePickerSingle(
-   id='my-date-picker-single',
-   min_date_allowed=date(2012, 10, 2),
-   max_date_allowed=date(2018, 9, 30),
-   initial_visible_month=date(2012, 10, 2),
-   date = date(2012, 10, 2)
-)
-
-# Note: in layout: ’datepicker’ (before graph) 
-
-@callback(
-   Output("my-date-picker-single", 'children'),
-   Input("my-date-picker-single", 'date')
-  )
-
-
-def update_output(date_value):
-   string_prefix = 'You have selected: '
-   if date_value is not None:
-       date_object = date.fromisoformat(date_value)
-       date_string = date_object.strftime('%B %d, %Y')
-       return string_prefix + date_string
-
-```
-
-
-
-
-# Testing
-
-Add evidence here (groups).
